@@ -44,17 +44,17 @@ var WDIC = {};
 
 const DEVELOP = exports.DEVELOP = global.test || false;
 const GUEST_PERMISSION = exports.GUEST_PERMISSION = {
-	'create': true,
-	'enter': true,
-	'talk': true,
-	'practice': true,
-	'ready': true,
-	'start': true,
-	'invite': true,
-	'inviteRes': true,
-	'kick': true,
-	'kickVote': true,
-	'wp': true
+	'create': false,
+	'enter': false,
+	'talk': false,
+	'practice': false,
+	'ready': false,
+	'start': false,
+	'invite': false,
+	'inviteRes': false,
+	'kick': false,
+	'kickVote': false,
+	'wp': false
 };
 const ENABLE_ROUND_TIME = exports.ENABLE_ROUND_TIME = [ 10, 30, 60, 90, 120, 150 ];
 const ENABLE_FORM = exports.ENABLE_FORM = [ "S", "J" ];
@@ -387,7 +387,7 @@ exports.init = function(_SID, CHAN){
 					return;
 				}
 				if($c.guest){
-					if(SID != "0"){
+					if(SID != "9"){
 						$c.sendError(402);
 						$c.socket.close();
 						return;
@@ -483,6 +483,8 @@ function joinNewUser($c) {
 		id: $c.id,
 		guest: $c.guest,
 		box: $c.box,
+		nickname: $c.nickname,
+		exordial: $c.exordial,
 		playTime: $c.data.playTime,
 		okg: $c.okgCount,
 		users: KKuTu.getUserList(),
@@ -494,6 +496,21 @@ function joinNewUser($c) {
 	});
 	narrateFriends($c.id, $c.friends, "on");
 	KKuTu.publish('conn', {user: $c.getData()});
+	
+	setInterval(() => {
+		$c.send('reloadData', {
+			id: $c.id,
+			box: $c.box,
+			nickname: $c.nickname,
+			exordial: $c.exordial,
+			playTime: $c.data.playTime,
+			okg: $c.okgCount,
+			users: KKuTu.getUserList(),
+			rooms: KKuTu.getRoomList(),
+			friends: $c.friends,
+			admin: $c.admin
+		});
+	}, 18000);
 
 	JLog.info("New user #" + $c.id);
 }
@@ -535,8 +552,24 @@ function processClientRequest($c, msg) {
 
 			$c.publish('yell', {value: msg.value});
 			break;
+		case 'reloadData':
+			$c.send('reloadData', {
+				id: $c.id,
+				box: $c.box,
+				nickname: $c.nickname,
+				exordial: $c.exordial,
+				playTime: $c.data.playTime,
+				okg: $c.okgCount,
+				users: KKuTu.getUserList(),
+				rooms: KKuTu.getRoomList(),
+				friends: $c.friends,
+				admin: $c.admin
+			});
 		case 'refresh':
 			$c.refresh();
+			break;
+		case 'bulkRefresh':
+			for(let i in DIC) DIC[i].refresh();
 			break;
 		case 'talk':
 			if (!msg.value) return;
@@ -626,8 +659,10 @@ function processClientRequest($c, msg) {
 				if (msg.title.length > 20) stable = false;
 				if (msg.password.length > 20) stable = false;
 				if (msg.limit < 2 || msg.limit > 8) {
-					msg.code = 432;
-					stable = false;
+					if(!$c.admin){
+						msg.code = 432;
+						stable = false;
+					}
 				}
 				if (msg.mode < 0 || msg.mode >= MODE_LENGTH) stable = false;
 				if (msg.round < 1 || msg.round > 10) {

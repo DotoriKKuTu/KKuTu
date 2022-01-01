@@ -366,6 +366,7 @@ KKuTu.onClientMessage = function($c, msg){
 			if(temp.kickVote.list.indexOf($c.id) != -1) return;
 			if(!GUEST_PERMISSION.kickVote) if($c.guest) return;
 			
+			
 			$c.kickVote($c, msg.agree);
 			break;
 		case 'handover':

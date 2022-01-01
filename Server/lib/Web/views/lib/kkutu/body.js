@@ -20,6 +20,17 @@ var spamWarning = 0;
 var spamCount = 0;
 // var smile = 94, tag = 35;
 
+// IE 지원 (의미가 있나?)
+if(!String.prototype.replaceAll){
+	String.prototype.replaceAll = function(regex){
+		var replaced = this;
+		while(regex.test(replaced)){
+			replaced = replaced.replace(regex, "");
+		}
+		return replaced;
+	}
+}
+
 function zeroPadding(num, len){ var s = num.toString(); return "000000000000000".slice(0, Math.max(0, len - s.length)) + s; }
 function send(type, data, toMaster){
 	var i, r = { type: type };
@@ -61,14 +72,64 @@ function showDialog($d, noToggle){
 		return true;
 	}
 }
+function inAlertEnd(cb, res) {
+	$stage.dialog.alertNo.unbind('click');
+	$stage.dialog.alertOK.unbind('click');
+	$stage.dialog.alert.hide()
+	if (!cb) return
+	return cb(res)
+}
+
+function inAlert(isChoose, h, text, a, b, c) {
+	showDialog($stage.dialog.alert, true);
+	$($($("#AlertDiag").children()[0]).children()[1]).hide();
+	$stage.dialog.alert.height(h)
+	$stage.dialog.alertText.html(text.split('\n').join('<br/>'));
+	$stage.dialog.alertOK.html(a);
+	$stage.dialog.alertOK.one('click', function() {
+		return inAlertEnd(isChoose ? c : b, 'ok');
+	});
+
+	if (isChoose) {
+		$stage.dialog.alertNo.show();
+		$stage.dialog.alertNo.html(b);
+		$stage.dialog.alertNo.one('click', function() {
+			return inAlertEnd(c, 'no');
+		});
+	} else {
+		$stage.dialog.alertNo.hide();
+	}
+}
+
+function goURL(url) {
+	inAlert(true, 130, L['linkWarning'], L['ok'], L['no'], function(res) {
+		if (res === 'ok') window.open(url)
+	})
+}
+
+function showChatBox($d, noToggle){
+	var size = [ $(window).width(), $(window).height() ];
+	
+	if(!noToggle && $d.is(":visible")){
+		$d.hide();
+		return false;
+	}else{
+		$(".ChatBox").removeClass("ChatBox");
+		$d.show().addClass("ChatBox").css({
+			'left': (size[0] - $d.width()) * 0.5,
+			'top': (size[1] - $d.height()) * 0.5
+		});
+		return true;
+	}
+}
 function applyOptions(opt){
 	$data.opts = opt;
 	
-	$data.muteBGM = $data.opts.mb;
-	$data.muteEff = $data.opts.me;
+	$data.BGMVolume = parseFloat($data.opts.bv);
+	$data.EffectVolume = parseFloat($data.opts.ev);
 	
-	$("#mute-bgm").attr('checked', $data.muteBGM);
-	$("#mute-effect").attr('checked', $data.muteEff);
+	$("#bgm-volume").val($data.BGMVolume);
+	$("#effect-volume").val($data.EffectVolume);
 	$("#deny-invite").attr('checked', $data.opts.di);
 	$("#deny-whisper").attr('checked', $data.opts.dw);
 	$("#deny-friend").attr('checked', $data.opts.df);
@@ -78,11 +139,11 @@ function applyOptions(opt){
 	$("#only-unlock").attr('checked', $data.opts.ou);
 	
 	if($data.bgm){
-		if($data.muteBGM){
+		if($data.BGMVolume == 0){
 			$data.bgm.volume = 0;
 			$data.bgm.stop();
 		}else{
-			$data.bgm.volume = 1;
+			$data.bgm.volume = $data.BGMVolume;
 			$data.bgm = playBGM($data.bgm.key, true);
 		}
 	}
@@ -166,10 +227,10 @@ function connectToRoom(chan, rid){
 		rws = undefined;
 	};
 	rws.onerror = function(e){
-		console.warn(L['error'], e);
+		console.warn(L[100], e);
 	};
 }
-function checkAge(){
+/*function checkAge(){
 	if(!confirm(L['checkAgeAsk'])) return send('caj', { answer: "no" }, true);
 	
 	while(true){
@@ -204,7 +265,7 @@ function checkAge(){
 			if(confirm(L['checkAgeCancel'])) return send('caj', { answer: "no" }, true);
 		}
 	}
-}
+}*/
 function onMessage(data){
 	var i;
 	var $target;
@@ -227,6 +288,7 @@ function onMessage(data){
 			$data.id = data.id;
 			$data.guest = data.guest;
 			$data.admin = data.admin;
+			$data.tester = data.tester;
 			$data.users = data.users;
 			$data.robots = {};
 			$data.rooms = data.rooms;
@@ -236,11 +298,15 @@ function onMessage(data){
 			$data._playTime = data.playTime;
 			$data._okg = data.okg;
 			$data._gaming = false;
+			$data.nickname = data.nickname;
+			$data.exordial = data.exordial;
 			$data.box = data.box;
+			$data.nickLimit = data.nickLimit;
 			if(data.test) alert(L['welcomeTestServer']);
 			if(location.hash[1]) tryJoin(location.hash.slice(1));
 			updateUI(undefined, true);
 			welcome();
+			notice(L['bgm_license']);
 			if(data.caj) checkAge();
 			updateCommunity();
 			break;
@@ -314,6 +380,20 @@ function onMessage(data){
 		case 'user':
 			$data.setUser(data.id, data);
 			if($data.room) updateUI($data.room.id == data.place);
+			break;
+		case 'reloadData':
+			$data.id = data.id;
+			$data.admin = data.admin;
+			if(!$data._gaming) $data.users = data.users;
+			$data.rooms = data.rooms;
+			$data.friends = data.friends;
+			$data._playTime = data.playTime;
+			$data._okg = data.okg;
+			$data.nickname = data.nickname;
+			$data.exordial = data.exordial;
+			$data.box = data.box;
+			updateUI(undefined, true);
+			updateCommunity();
 			break;
 		case 'friends':
 			$data._friends = {};
@@ -404,9 +484,11 @@ function onMessage(data){
 			notice(getKickText($data._kickTarget.profile, data));
 			break;
 		case 'invited':
-			send('inviteRes', {
-				from: data.from,
-				res: $data.opts.di ? false : confirm(data.from + L['invited'])
+			inAlert(true, 130, data.from + L['invited'], L['ok'], L['no'], function(res) {
+				send('inviteRes', {
+					from: data.from,
+					res: $data.opts.di ? false : res === 'ok'
+				});
 			});
 			break;
 		case 'inviteNo':
@@ -453,6 +535,7 @@ function onMessage(data){
 			}
 			break;
 		case 'error':
+			console.log(data)
 			i = data.message || "";
 			if(data.code == 401){
 				/* 로그인
@@ -469,12 +552,13 @@ function onMessage(data){
 				i = L['server_' + i];
 			}else if(data.code == 416){
 				// 게임 중
-				if(confirm(L['error_'+data.code])){
+				inAlert(true, 130, L['error_'+data.code], L['ok'], L['no'], function(res) {
+					if(res === 'no') return;
 					stopBGM();
 					$data._spectate = true;
 					$data._gaming = true;
 					send('enter', { id: data.target, password: $data._pw, spectate: true }, true);
-				}
+				});
 				return;
 			}else if(data.code == 413){
 				$stage.dialog.room.hide();
@@ -519,7 +603,7 @@ function onMessage(data){
 				alert("자동화 봇 방지를 위한 캡챠 인증에 실패했습니다. 메인 화면에서 다시 시도해 주세요.");
 				break;
 			}
-			alert("[#" + data.code + "] " + L['error_'+data.code] + i);
+			inAlert(false, 130, "[#" + data.code + "] " + L['error_'+data.code] + i, L['ok']);
 			break;
 		default:
 			break;
@@ -539,6 +623,8 @@ function welcome(){
 	}, 2000);
 	
 	if($data.admin) console.log("관리자 모드");
+	
+	isWelcome = true;
 }
 function getKickText(profile, vote){
 	var vv = L['agree'] + " " + vote.Y + ", " + L['disagree'] + " " + vote.N + L['kickCon'];
@@ -659,7 +745,7 @@ function processRoom(data){
 		$target = $data.users[data.target];
 		if(data.kickVote){
 			notice(getKickText($target.profile, data.kickVote));
-			if($target.id == data.id) alert(L['hasKicked']);
+			if($target.id == data.id) inAlert(false, 100, L['hasKicked'], L['ok'])
 		}
 		if(data.room.players.indexOf($data.id) == -1){
 			if($data.room) if($data.room.gaming){
@@ -781,10 +867,13 @@ function updateUI(myRoom, refresh){
 	$(".kkutu-menu button").hide();
 	for(i in $stage.box) $stage.box[i].hide();
 	$stage.box.me.show();
-	$stage.box.chat.show().width(790).height(190);
-	$stage.chat.height(120);
+	$stage.box.chat.show().width(230).height(330);
+	$stage.chat.height(260);
 	
 	if(only == "for-lobby"){
+		$("#Middle").width(1020);
+		$(".ChatBox").width(230).height(330);
+		$stage.chat.height(260);
 		$data._ar_first = true;
 		$stage.box.userList.show();
 		if($data._shop){
@@ -802,6 +891,9 @@ function updateUI(myRoom, refresh){
 			delete $data._jamsu;
 		}
 	}else if(only == "for-master" || only == "for-normal"){
+		$("#Middle").width(1020);
+		$(".ChatBox").width(230).height(330);
+		$stage.chat.height(260);
 		$(".team-chosen").removeClass("team-chosen");
 		if($data.users[$data.id].game.ready || $data.users[$data.id].game.form == "S"){
 			$stage.menu.ready.addClass("toggled");
@@ -817,7 +909,7 @@ function updateUI(myRoom, refresh){
 			}
 		}
 		$data._shop = false;
-		$stage.box.room.show().height(360);
+		$stage.box.room.show().height(470);
 		if(only == "for-master") if($stage.dialog.inviteList.is(':visible')) updateUserList();
 		updateRoom(false);
 		updateMe();
@@ -830,11 +922,13 @@ function updateUI(myRoom, refresh){
 		$data._ar_first = true;
 		$stage.box.me.hide();
 		$stage.box.game.show();
-		$(".ChatBox").width(1000).height(140);
-		$stage.chat.height(70);
+		$("#Middle").width(1260);
+		$(".ChatBox").width(230).height(470);
+		$stage.chat.height(400);
 		updateRoom(true);
 	}
 	$data._only = only;
+	setLocation($data.place);
 	setLocation($data.place);
 	$(".kkutu-menu ."+only).show();
 }
@@ -899,13 +993,13 @@ function updateMe(){
 	renderMoremi(".my-image", my.equip);
 	// $(".my-image").css('background-image', "url('"+my.profile.image+"')");
 	$(".my-stat-level").replaceWith(getLevelImage(my.data.score).addClass("my-stat-level"));
-	$(".my-stat-name").html(my.profile.title || my.profile.name);
+	$(".my-stat-name").text(my.profile.title || my.profile.name);
 	$(".my-stat-record").html(L['globalWin'] + " " + gw + L['W']);
 	$(".my-stat-ping").html(commify(my.money) + L['ping']);
 	$(".my-okg .graph-bar").width(($data._playTime % 600000) / 6000 + "%");
 	$(".my-okg-text").html(prettyTime($data._playTime));
 	$(".my-level").html(L['LEVEL'] + " " + lv);
-	$(".my-gauge .graph-bar").width((my.data.score-prev)/(goal-prev)*190);
+	$(".my-gauge .graph-bar").width((my.data.score-prev)/(goal-prev)*110);
 	$(".my-gauge-text").html(commify(my.data.score) + " / " + commify(goal));
 }
 function prettyTime(time){
@@ -945,12 +1039,14 @@ function updateUserList(refresh){
 	
 	if(refresh){
 		$stage.lobby.userList.empty();
+		$stage.dialog.uslBoard.empty();
 		$stage.dialog.inviteList.empty();
 		for(i in arr){
 			o = arr[i];
 			if(o.robot) continue;
 			
 			$stage.lobby.userList.append(userListBar(o));
+			$stage.dialog.uslBoard.append();
 			if(o.place == 0) $stage.dialog.inviteList.append(userListBar(o, true));
 		}
 	}
@@ -963,7 +1059,7 @@ function userListBar(o, forInvite){
 		.append($("<div>").addClass("jt-image users-image").css('background-image', "url('"+o.profile.image+"')"))
 		.append(getLevelImage(o.data.score).addClass("users-level"))
 		// .append($("<div>").addClass("jt-image users-from").css('background-image', "url('/img/kkutu/"+o.profile.type+".png')"))
-		.append($("<div>").addClass("users-name").html(o.profile.title || o.profile.name))
+		.append($("<div>").addClass("users-name").text(o.profile.title || o.profile.name))
 		.on('click', function(e){
 			requestInvite($(e.currentTarget).attr('id').slice(12));
 		});
@@ -972,7 +1068,7 @@ function userListBar(o, forInvite){
 		.append($("<div>").addClass("jt-image users-image").css('background-image', "url('"+o.profile.image+"')"))
 		.append(getLevelImage(o.data.score).addClass("users-level"))
 		// .append($("<div>").addClass("jt-image users-from").css('background-image', "url('/img/kkutu/"+o.profile.type+".png')"))
-		.append($("<div>").addClass("users-name ellipse").html(o.profile.title || o.profile.name))
+		.append($("<div>").addClass("users-name ellipse").text(o.profile.title || o.profile.name))
 		.on('click', function(e){
 			requestProfile($(e.currentTarget).attr('id').slice(11));
 		});
@@ -1020,7 +1116,7 @@ function roomListBar(o){
 	.append($("<div>").addClass("rooms-number").html(o.id))
 	.append($("<div>").addClass("rooms-title ellipse").text(badWords(o.title)))
 	.append($("<div>").addClass("rooms-limit").html(o.players.length + " / " + o.limit))
-	.append($("<div>").width(270)
+	.append($("<div>").width(247)
 		.append($("<div>").addClass("rooms-mode").html(opts.join(" / ").toString()))
 		.append($("<div>").addClass("rooms-round").html(L['rounds'] + " " + o.round))
 		.append($("<div>").addClass("rooms-time").html(o.time + L['SECOND']))
@@ -1041,7 +1137,7 @@ function normalGameUserBar(o){
 		.append($m = $("<div>").addClass("moremi game-user-image"))
 		.append($("<div>").addClass("game-user-title")
 			.append(getLevelImage(o.data.score).addClass("game-user-level"))
-			.append($bar = $("<div>").addClass("game-user-name ellipse").html(o.profile.title || o.profile.name))
+			.append($bar = $("<div>").addClass("game-user-name ellipse").text(o.profile.title || o.profile.name))
 			.append($("<div>").addClass("expl").html(L['LEVEL'] + " " + getLevel(o.data.score)))
 		)
 		.append($n = $("<div>").addClass("game-user-score"));
@@ -1057,7 +1153,7 @@ function miniGameUserBar(o){
 	var $R = $("<div>").attr('id', "game-user-"+o.id).addClass("game-user")
 		.append($("<div>").addClass("game-user-title")
 			.append(getLevelImage(o.data.score).addClass("game-user-level"))
-			.append($bar = $("<div>").addClass("game-user-name ellipse").html(o.profile.title || o.profile.name))
+			.append($bar = $("<div>").addClass("game-user-name ellipse").text(o.profile.title || o.profile.name))
 		)
 		.append($n = $("<div>").addClass("game-user-score"));
 	if(o.id == $data.id) $bar.addClass("game-user-my-name");
@@ -1125,7 +1221,7 @@ function updateRoom(gaming){
 				)
 				.append($("<div>").addClass("room-user-title")
 					.append(getLevelImage(o.data.score).addClass("room-user-level"))
-					.append($bar = $("<div>").addClass("room-user-name").html(o.profile.title || o.profile.name))
+					.append($bar = $("<div>").addClass("room-user-name").text(o.profile.title || o.profile.name))
 				).on('click', function(e){
 					requestProfile($(e.currentTarget).attr('id').slice(10));
 				})
@@ -1163,7 +1259,7 @@ function onMasterSubJamsu(){
 	notice(L['subJamsu']);
 	$data._jamsu = addTimeout(function(){
 		send('leave');
-		alert(L['masterJamsu']);
+		inAlert(false, 130, L['masterJamsu'], L['ok'])
 	}, 30000);
 }
 function updateScore(id, score){
@@ -1249,6 +1345,7 @@ function drawMyDress(avGroup){
 	renderMoremi($view, my.equip);
 	$(".dress-type.selected").removeClass("selected");
 	$("#dress-type-all").addClass("selected");
+	$("#dress-nickname").val(my.nickname);
 	$("#dress-exordial").val(my.exordial);
 	drawMyGoods(avGroup || true);
 }
@@ -1302,37 +1399,41 @@ function drawMyGoods(avGroup){
 		var $target = $(e.currentTarget);
 		var id = $target.attr('id').slice(6);
 		var item = iGoods(id);
-		var isLeft;
 		
 		if(e.ctrlKey){
 			if($target.hasClass("dress-equipped")) return fail(426);
-			if(!confirm(L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'])) return;
-			$.post("/payback/" + id, function(res){
-				if(res.error) return fail(res.error);
-				alert(L['painback']);
-				$data.box = res.box;
-				$data.users[$data.id].money = res.money;
-				
-				drawMyDress($data._avGroup);
-				updateUI(false);
+			inAlert(true, 130, L['surePayback'] + commify(Math.round((item.cost || 0) * 0.2)) + L['ping'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return;
+				$.post("/payback/" + id, function(res){
+					if(res.error) return fail(res.error);
+					inAlert(false, 130, L['painback'], L['ok'])
+					$data.box = res.box;
+					$data.users[$data.id].money = res.money;
+
+					drawMyDress($data._avGroup);
+					updateUI(false);
+				});
 			});
 		}else if(AVAIL_EQUIP.indexOf(item.group) != -1){
 			if(item.group == "Mhand"){
-				isLeft = confirm(L['dressWhichHand']);
-			}
-			requestEquip(id, isLeft);
+				inAlert(true, 130, L['dressWhichHand'], L['right'], L['left'], function(res) {
+					requestEquip(id, res === 'no');
+				});
+			} else requestEquip(id);
 		}else if(item.group == "CNS"){
-			if(!confirm(L['sureConsume'])) return;
-			$.post("/consume/" + id, function(res){
-				if(res.exp) notice(L['obtainExp'] + ": " + commify(res.exp));
-				if(res.money) notice(L['obtainMoney'] + ": " + commify(res.money));
-				res.gain.forEach(function(item){ queueObtain(item); });
-				$data.box = res.box;
-				$data.users[$data.id].data = res.data;
-				send('refresh');
-				
-				drawMyDress($data._avGroup);
-				updateMe();
+			inAlert(true, 130, L['sureConsume'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return;
+				$.post("/consume/" + id, function(res){
+					if(res.exp) notice(L['obtainExp'] + ": " + commify(res.exp));
+					if(res.money) notice(L['obtainMoney'] + ": " + commify(res.money));
+					res.gain.forEach(function(item){ queueObtain(item); });
+					$data.box = res.box;
+					$data.users[$data.id].data = res.data;
+					send('refresh');
+
+					drawMyDress($data._avGroup);
+					updateMe();
+				});
 			});
 		}
 	});
@@ -1344,7 +1445,8 @@ function requestEquip(id, isLeft){
 	if(part.substr(0, 3) == "BDG") part = "BDG";
 	var already = my.equip[part] == id;
 	
-	if(confirm(L[already ? 'sureUnequip' : 'sureEquip'] + ": " + L[id][0])){
+	inAlert(true, 130, L[already ? 'sureUnequip' : 'sureEquip'] + ": " + L[id][0], L['ok'], L['no'], function(res) {
+		if(res === 'no') return;
 		$.post("/equip/" + id, { isLeft: isLeft }, function(res){
 			if(res.error) return fail(res.error);
 			$data.box = res.box;
@@ -1354,7 +1456,7 @@ function requestEquip(id, isLeft){
 			send('refresh');
 			updateUI(false);
 		});
-	}
+	});
 }
 function drawCharFactory(){
 	var $tray = $("#cf-tray");
@@ -1476,7 +1578,7 @@ function drawLeaderboard(data){
 				.append(getLevelImage(item.score).addClass("ranking-image"))
 				.append($("<label>").css('padding-top', 2).html(getLevel(item.score)))
 			)
-			.append($("<td>").html(profile))
+			.append($("<td>").text(profile))
 			.append($("<td>").html(commify(item.score)))
 		);
 	});
@@ -1522,8 +1624,10 @@ function updateCommunity(){
 		var memo = $data.friends[id];
 		
 		if($data._friends[id].server) return fail(455);
-		if(!confirm(memo + "(#" + id.substr(0, 5) + ")\n" + L['friendSureRemove'])) return;
-		send('friendRemove', { id: id }, true);
+		inAlert(true, 130, memo + "(#" + id.substr(0, 5) + ")\n" + L['friendSureRemove'], L['ok'], L['no'], function(res) {
+			if(res === 'no') return;
+			send('friendRemove', { id: id }, true);
+		});
 	}
 	$("#CommunityDiag .dialog-title").html(L['communityText'] + " (" + len + " / 100)");
 }
@@ -1533,7 +1637,7 @@ function requestRoomInfo(id){
 	
 	$data._roominfo = id;
 	$("#RoomInfoDiag .dialog-title").html(id + L['sRoomInfo']);
-	$("#ri-title").html((o.password ? "<i class='fa fa-lock'></i>&nbsp;" : "") + o.title);
+	$("#ri-title").html((o.password ? "<i class='fa fa-lock'></i>&nbsp;" : "") + o.title.replaceAll(/\<|\>|\"|\'|\%|\;|\(|\)|\&|\+|\-/g, ""));
 	$("#ri-mode").html(L['mode' + MODE[o.mode]]);
 	$("#ri-round").html(o.round + ", " + o.time + L['SECOND']);
 	$("#ri-limit").html(o.players.length + " / " + o.limit);
@@ -1549,7 +1653,7 @@ function requestRoomInfo(id){
 		
 		$pls.append($("<div>").addClass("ri-player")
 			.append($moremi = $("<div>").addClass("moremi rip-moremi"))
-			.append($p = $("<div>").addClass("ellipse rip-title").html(p.profile.title || p.profile.name))
+			.append($p = $("<div>").addClass("ellipse rip-title").text(p.profile.title || p.profile.name))
 			.append($("<div>").addClass("rip-team team-" + rd.t).html($("#team-" + rd.t).html()))
 			.append($("<div>").addClass("rip-form").html(L['pform_' + rd.f]))
 		);
@@ -1571,11 +1675,11 @@ function requestProfile(id){
 		notice(L['error_405']);
 		return;
 	}
-	$("#ProfileDiag .dialog-title").html((o.profile.title || o.profile.name) + L['sProfile']);
+	$("#ProfileDiag .dialog-title").text((o.profile.title || o.profile.name) + L['sProfile']);
 	$(".profile-head").empty().append($pi = $("<div>").addClass("moremi profile-moremi"))
 		.append($("<div>").addClass("profile-head-item")
 			.append(getImage(o.profile.image).addClass("profile-image"))
-			.append($("<div>").addClass("profile-title ellipse").html(o.profile.title || o.profile.name)
+			.append($("<div>").addClass("profile-title ellipse").text(o.profile.title || o.profile.name)
 				.append($("<label>").addClass("profile-tag").html(" #" + o.id.toString().substr(0, 5)))
 			)
 		)
@@ -1597,9 +1701,14 @@ function requestProfile(id){
 		for(i in o.data.record){
 			var r = o.data.record[i];
 			
+			if (r[0] != 0) {
+				var pct = (r[1] / r[0] * 100).toFixed(2);
+			} else var pct = "0.00";
+
 			$rec.append($("<div>").addClass("profile-record-field")
 				.append($("<div>").addClass("profile-field-name").html(L['mode' + i]))
 				.append($("<div>").addClass("profile-field-record").html(r[0] + L['P'] + " " + r[1] + L['W']))
+				.append($("<div>").addClass("profile-field-winrate").html(String(pct) + '%'))
 				.append($("<div>").addClass("profile-field-score").html(commify(r[2]) + L['PTS']))
 			);
 		}
@@ -1632,9 +1741,11 @@ function requestInvite(id){
 	
 	if(id != "AI"){
 		nick = $data.users[id].profile.title || $data.users[id].profile.name;
-		if(!confirm(nick + L['sureInvite'])) return;
-	}
-	send('invite', { target: id });
+		inAlert(true, 130, nick + L['sureInvite'], L['ok'], L['no'], function(res) {
+			if(res === 'no') return;
+			send('invite', { target: id });
+		});
+	} else send('invite', { target: id });
 }
 function checkFailCombo(id){
 	if(!$data._replay && $data.lastFail == $data.id && $data.id == id){
@@ -1671,7 +1782,7 @@ function gameReady(){
 	$data._spectate = $data.room.game.seq.indexOf($data.id) == -1;
 	$data._gAnim = true;
 	$stage.box.room.show().height(360).animate({ 'height': 1 }, 500);
-	$stage.box.game.height(1).animate({ 'height': 410 }, 500);
+	$stage.box.game.height(1).animate({ 'height': 470 }, 500);
 	stopBGM();
 	$stage.dialog.resultSave.attr('disabled', false);
 	clearBoard();
@@ -2007,7 +2118,7 @@ function roundEnd(result, data){
 		$b.append($o = $("<div>").addClass("result-board-item")
 			.append($p = $("<div>").addClass("result-board-rank").html(r.rank + 1))
 			.append(getLevelImage(sc).addClass("result-board-level"))
-			.append($("<div>").addClass("result-board-name").html(o.profile.title || o.profile.name))
+			.append($("<div>").addClass("result-board-name").text(o.profile.title || o.profile.name))
 			.append($("<div>").addClass("result-board-score")
 				.html(data.scores ? (L['avg'] + " " + commify(data.scores[r.id]) + L['kpm']) : (commify(r.score || 0) + L['PTS']))
 			)
@@ -2145,7 +2256,7 @@ function drawRanking(ranks){
 		$b.append($o = $("<div>").addClass("result-board-item")
 			.append($("<div>").addClass("result-board-rank").html(r.rank + 1))
 			.append(getLevelImage(r.score).addClass("result-board-level"))
-			.append($("<div>").addClass("result-board-name").html(o.profile.title || o.profile.name))
+			.append($("<div>").addClass("result-board-name").text(o.profile.title || o.profile.name))
 			.append($("<div>").addClass("result-board-score").html(commify(r.score) + L['PTS']))
 			.append($("<div>").addClass("result-board-reward").html(""))
 			.append($v = $("<div>").addClass("result-board-lvup").css('display', me ? "block" : "none")
@@ -2163,7 +2274,7 @@ function drawRanking(ranks){
 function kickVoting(target){
 	var op = $data.users[target].profile;
 	
-	$("#kick-vote-text").html((op.title || op.name) + L['kickVoteText']);
+	$("#kick-vote-text").text((op.title || op.name) + L['kickVoteText']);
 	$data.kickTime = 10;
 	$data._kickTime = 10;
 	$data._kickTimer = addTimeout(kickVoteTick, 1000);
@@ -2509,6 +2620,13 @@ function getLevel(score){
 	return i+1;
 }
 function getLevelImage(score){
+	if(score < 0){
+		return $("<div>").css({
+			'float': "left",
+			'background-image': "url('/img/kkutu/lv/gmlevel.png')",
+			'background-size': "100%"
+		});
+	};
 	var lv = getLevel(score) - 1;
 	var lX = (lv % 25) * -100;
 	var lY = Math.floor(lv * 0.04) * -100;
@@ -2544,10 +2662,10 @@ function setRoomHead($obj, room){
 	$obj.empty()
 		.append($("<h5>").addClass("room-head-number").html("["+(room.practice ? L['practice'] : room.id)+"]"))
 		.append($("<h5>").addClass("room-head-title").text(badWords(room.title)))
-		.append($rm = $("<h5>").addClass("room-head-mode").html(opts.join(" / ")))
-		.append($("<h5>").addClass("room-head-limit").html((mobile ? "" : (L['players'] + " ")) + room.players.length + " / " +room.limit))
+		.append($("<h5>").addClass("room-head-time").html(room.time + L['SECOND']))
 		.append($("<h5>").addClass("room-head-round").html(L['rounds'] + " " + room.round))
-		.append($("<h5>").addClass("room-head-time").html(room.time + L['SECOND']));
+		.append($("<h5>").addClass("room-head-limit").html((mobile ? "" : (L['players'] + " ")) + room.players.length + " / " +room.limit))
+		.append($rm = $("<h5>").addClass("room-head-mode").html(opts.join(" / ")));
 		
 	if(rule.opts.indexOf("ijp") != -1){
 		$rm.append($("<div>").addClass("expl").html("<h5>" + room.opts.injpick.map(function(item){
@@ -2611,23 +2729,28 @@ function stopBGM(){
 }
 function playSound(key, loop){
 	var src, sound;
-	var mute = (loop && $data.muteBGM) || (!loop && $data.muteEff);
+	var bgmMuted = loop && $data.BGMVolume == 0;
+	var effectMuted = !loop && $data.EffectVolume == 0
 	
 	sound = $sound[key] || $sound.missing;
 	if(window.hasOwnProperty("AudioBuffer") && sound instanceof AudioBuffer){
+		var gainNode = audioContext.createGain();
 		src = audioContext.createBufferSource();
 		src.startedAt = audioContext.currentTime;
 		src.loop = loop;
-		if(mute){
+		if(bgmMuted || effectMuted){
+			gainNode.gain.value = 0;
 			src.buffer = audioContext.createBuffer(2, sound.length, audioContext.sampleRate);
 		}else{
+			gainNode.gain.value = (loop ? $data.BGMVolume : $data.EffectVolume) || 0.5;
 			src.buffer = sound;
 		}
-		src.connect(audioContext.destination);
+		gainNode.connect(audioContext.destination);
+		src.connect(gainNode);
 	}else{
 		if(sound.readyState) sound.audio.currentTime = 0;
 		sound.audio.loop = loop || false;
-		sound.audio.volume = mute ? 0 : 1;
+		sound.audio.volume = mute ? 0 : ((loop ? $data.BGMVolume : $data.EffectVolume) || 0.5);
 		src = sound;
 	}
 	if($_sound[key]) $_sound[key].stop();
@@ -2710,11 +2833,11 @@ function chat(profile, msg, from, timestamp){
 		$bar = ($data.room.gaming ? 2 : 0) + ($(".jjoriping").hasClass("cw") ? 1 : 0);
 		chatBalloon(msg, profile.id, $bar);
 	}
-	$stage.chat.append($item = $("<div>").addClass("chat-item")
-		.append($bar = $("<div>").addClass("chat-head ellipse").text(profile.title || profile.name))
-		.append($msg = $("<div>").addClass("chat-body").text(msg))
-		.append($("<div>").addClass("chat-stamp").text(time.toLocaleTimeString()))
-	);
+	$stage.chat.append($item = $("<div>").addClass("chat-item") 
+ 		.append($bar = $("<div>").addClass("chat-head ellipse").text(profile.title || profile.name)) 
+		.append($("<div>").addClass("chat-stamp").text(time.toLocaleTimeString())) 
+ 		.append($msg = equip["BDG"]==="b1_gm"?$("<div>").addClass("chat-body").html(msg):$("<div>").addClass("chat-body").text(msg)) 
+ 	); 
 	if(timestamp) $bar.prepend($("<i>").addClass("fa fa-video-camera"));
 	$bar.on('click', function(e){
 		requestProfile(profile.id);
@@ -2725,7 +2848,7 @@ function chat(profile, msg, from, timestamp){
 	if(link = msg.match(/https?:\/\/[\w\.\?\/&#%=-_\+]+/g)){
 		msg = $msg.html();
 		link.forEach(function(item){
-			msg = msg.replace(item, "<a href='#' style='color: #2222FF;' onclick='if(confirm(\"" + L['linkWarning'] + "\")) window.open(\"" + item + "\");'>" + item + "</a>");
+			msg = msg.replace(item, "<a href='#' style='color: #2222FF;' onclick=goURL(\"" + item + "\")>" + item + "</a>");
 		});
 		$msg.html(msg);
 	}
@@ -2743,8 +2866,8 @@ function notice(msg, head){
 	stackChat();
 	$("#Chat,#chat-log-board").append($("<div>").addClass("chat-item chat-notice")
 		.append($("<div>").addClass("chat-head").text(head || L['notice']))
-		.append($("<div>").addClass("chat-body").html(msg))
 		.append($("<div>").addClass("chat-stamp").text(time.toLocaleTimeString()))
+		.append($("<div>").addClass("chat-body").html(msg))
 	);
 	$stage.chat.scrollTop(999999999);
 	if(head == "tail") console.warn(time.toLocaleString(), msg);
@@ -2863,10 +2986,12 @@ function renderMoremi(target, equip){
 			.css({ 'width': "100%", 'height': "100%" })
 		);
 	}
-	$obj.children(".moremi-back").after($("<img>").addClass("moremies moremi-body")
-		.attr('src', equip.robot ? "/img/kkutu/moremi/robot.png" : "/img/kkutu/moremi/body.png")
-		.css({ 'width': "100%", 'height': "100%" })
+	var moremibody = $obj.children(".moremi-skin").after($("<img>").addClass("moremies moremi-body")
+		.css({ 'width': "100%", 'height': "100%", 'display': "none" })
 	);
+	if(equip.robot === true){
+		moremibody.attr('src', "/img/kkutu/moremi/skin/robot.png")
+	};
 	$obj.children(".moremi-rhand").css('transform', "scaleX(-1)");
 }
 function commify(val){
@@ -2884,7 +3009,7 @@ function setLocation(place){
 	else location.hash = "";
 }
 function fail(code){
-	return alert(L['error_' + code]);
+	inAlert(false, 130, L['error_' + code], L['ok']);
 }
 function yell(msg){
 	$stage.yell.show().css('opacity', 1).html(msg);
@@ -2893,5 +3018,5 @@ function yell(msg){
 		addTimeout(function(){
 			$stage.yell.hide();
 		}, 3000);
-	}, 1000);
+	}, 2000);
 }

@@ -55,7 +55,7 @@ equ{
 	z-index: 5;
 }
 #Top{
-	background-color: #7CC4F8;
+	background-color: #ffffff;
 	background-image: none;
 }
 #Top .menu-btn{
@@ -75,7 +75,7 @@ iframe{
 #Yell{
 	position: fixed;
 	padding: 10px 0px;
-	margin-top: 200px;
+	margin-top: 150px;
 	width: 100%;
 	font-size: 32px;
 	font-weight: bold;
@@ -85,10 +85,14 @@ iframe{
 	background-color: rgba(0, 0, 0, 0.7);
 }
 #ReadyBtn{
-	animation: ReadyBlink 1s linear infinite;
+	animation: ReadyBlink 1s cubic-bezier(0, 4, 1, 1) infinite;
+	padding-top: 15px;
+	padding-bottom: 15px;
 }
 #ReadyBtn:hover, #ReadyBtn.toggled{
 	animation: none;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 .product-body{ font-size: 12px; }
 .deltaScore{
@@ -103,29 +107,52 @@ iframe{
 	.lost{ color: #F59E9E; }
 .kkutu-menu{
 	float: left;
-	width: 1010px;
-	height: 30px;
+	width: 750px;
+	height: 50px;
+	border-radius: 10px;
+	box-shadow: 0px 3px 6px #00000020;
+	background-color: #FFFFFF;
+	padding: 5px;
+	margin-bottom: 5px;
+	margin-right: 5px;
 }
 .kkutu-menu button{
 	float: left;
 	border: none;
-	border-bottom-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	width: 98px;
-	height: 20px;
+	width: 97.1px;
+	height: 40px;
+	font-size: 14px;
+	font-weight: bold;
 }
 	.kkutu-menu button:hover{
-		margin-top: -5px;
-		height: 25px;
+		margin-top: -10px;
 	}
 	.kkutu-menu .toggled{
-		margin-top: 5px !important;
 		color: #EEEEEE;
 		background-color: #444444 !important;
 	}
 	.tiny-menu{
-		width: 20px !important;
+		width: 66.6px !important;
 	}
+.kkutu-menu.tiny{
+	width: 230px;
+	margin-left: 5px;
+}
+.bottom-banner{
+	float: left;
+	width: 300px;
+	height: 33px;
+	border-radius: 10px;
+	box-shadow: 0px 3px 6px #00000020;
+	background-color: #FFFFFF;
+	padding: 5px;
+	margin-top: 5px;
+	margin-right: 10px;
+	cursor: pointer;
+	font-size: 32px;
+	color: #666666;
+	text-align: center;
+}
 .dialog{
 	display: none;
 	position: fixed;
@@ -133,7 +160,7 @@ iframe{
 	border-radius: 10px;
 	color: #111111;
 	box-shadow: 0px 1px 1px #141414;
-	background-color: #EEEEEE;
+	background-color: #FFFFFF;
 	z-index: 2;
 }
 	.dialog-bar{ float: left; margin: 3px 0px; width: 100%; }
@@ -141,14 +168,14 @@ iframe{
 	.dialog-bar-value{ width: calc(100% - 100px) !important; text-align: left !important; }
 	.dialog-bar input, .dialog-bar select{ float: left; width: 187px; height: 14px; box-sizing: inherit; outline: none; }
 	.dialog-bar label{ font-size: 13px; }
-	.dialog-bar button{ float: left; }
+	.dialog-bar button{ float: left; border: 1px solid #cccccc; }
 		.dialog-opt{ float: left; width: 100px; }
 	.tail-button{ margin-top: 7px; }
 	.tail-button button{ float: right; margin-right: 5px; width: 80px; height: 20px; }
 	.dialog .closeBtn{
 		float: right;
 		border-radius: 6px;
-		margin-top: 1px;
+		margin-right: 1px;
 		width: 12px;
 		height: 12px;
 		background-color: #EE5555;
@@ -157,12 +184,13 @@ iframe{
 	.dialog-head{
 		padding: 3px;
 		border-bottom: 1px solid #CCCCCC;
-		border-radius: 5px;
+		border-radius: 10px;
 		margin-bottom: 5px;
 		height: 12px;
 		color: #222222;
 		font-size: 11px;
-		background-color: #DDDDDD;
+		background-color: #ffffff;
+		box-shadow: 0px 0px 1px 1px #00000022;
 	}
 		.dialog-head .dialog-title{ float: left; cursor: move; }
 #replay-players{ height: 140px; overflow-y: scroll; }
@@ -184,16 +212,17 @@ iframe{
 	position: absolute;
 }
 .Product{
-	border-radius: 0px;
+	border-radius: 10px;
 	color: #111111;
-	box-shadow: 0px 2px 1px #DDDDDD;
-	background-color: #EEEEEE;
+	box-shadow: 0px 3px 6px #00000020;
+	background-color: #FFFFFF;
 }
 .product-title{
 	border-bottom-color: #CCCCCC;
-	border-radius: 5px;
 	color: #222222;
-	background-color: #DDDDDD;
+	background-color: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0px 0px 1px 1px #00000022;
 }
 .product-title i{ color: #111111; }
 .dialog-front{ z-index: 3; }
@@ -210,16 +239,17 @@ iframe{
 			.cfi-menu>i:hover{ background-color: #FFF; }
 #ProfileDiag .dialog-body div{ float: left; }
 	.profile-moremi{ margin-right: 3px; width: 80px; height: 80px; }
-	.profile-head-item{ margin: 3px 2px; width: 213px; }
+	.profile-head-item{ margin: 3px 2px; width: 313px; }
 		.profile-image{ margin-right: 3px; width: 20px; height: 20px; }
 		.profile-level{ margin-right: 3px; width: 20px; height: 20px; }
-		.profile-title{ padding-top: 1px; font-size: 15px; font-weight: bold; width: 190px; }
+		.profile-title{ padding-top: 1px; font-size: 15px; font-weight: bold; width: 290px; }
 		.profile-tag{ font-size: 11px; color: #777; }
 		.profile-level-text{ padding-top: 2px; font-size: 13px; }
 		.profile-score-text{ float: right !important; padding-top: 3px; font-size: 11px; color: #444444; }
 	.profile-record-field{ margin: 2px 0px; width: 100%; }
-		.profile-field-name{ width: 35%; text-align: center; }
-		.profile-field-record{ width: 32%; text-align: center; }
+		.profile-field-name{ width: 27%; text-align: center; }
+		.profile-field-record{ width: 27%; text-align: center; }
+		.profile-field-winrate{ width: 14%; text-align: center; }
 		.profile-field-score{ width: 32%; text-align: center; }
 #RoomInfoDiag .dialog-body div{ float: left; }
 	.ri-player{ margin: 2px 0px; width: 100%; }
@@ -229,11 +259,12 @@ iframe{
 		.rip-team{ margin: 3px 3px 0px 0px; width: 44px; text-align: center; }
 		.rip-form{ margin-top: 3px; width: calc(100% - 90px); }
 .UserListBox{
-	width: 200px;
-	height: 360px;
+	width: 210px;
+	height: 240px;
+	padding: 0px;
 }
 	.UserListBox div{ float: left; }
-	.UserListBox .product-body{ width: 190px; height: 330px; overflow-x: hidden; overflow-y: scroll; }
+	.UserListBox .product-body{ width: 190px; height: 210px; overflow-x: hidden; overflow-y: scroll; }
 	.users-item{ width: 190px; }
 		.users-image{ margin: 1px; width: 18px; height: 18px; }
 		.users-level{ margin: 1px; width: 18px; height: 18px; }
@@ -242,24 +273,26 @@ iframe{
 	.invite-item{ margin: 2px 0px; width: 100%; height: 20px; }
 		.invite-item .users-name{ width: 270px; }
 .RoomListBox{
-	width: 790px;
-	height: 360px;
+	width: 750px;
+	height: 470px;
+	margin: 5px 5px 5px 0px;
+	background-image: url('/img/kkutu/roombox.png');
 }
 	.RoomListBox div{ float: left; }
-	.RoomListBox .product-body{ width: 780px; height: 330px; overflow-x: hidden; overflow-y: scroll; }
+	.RoomListBox .product-body{ width: 740px; height: 440px; overflow-x: hidden; overflow-y: scroll; }
 	.rooms-item{
 		padding: 5px;
 		border-radius: 10px;
 		margin: 3px;
-		width: 364px;
+		width: 340px;
 		height: 64px;
 		box-shadow: 0px 1px 1px #777777;
 		cursor: pointer;
 		background-color: #E4E4E4;
 		transition: all 300ms ease;
 	}
-		.rooms-create{ background-color: #8EC0F3; }
-		.rooms-create>div{ float: none; padding: 20px 0px; text-align: center; font-size: 15px; font-weight: bold; }
+		.rooms-create{ background-color: #FFFFFF00; width: 724px; height: 424px; box-shadow: 0px 0px 0px; }
+		.rooms-create>div{ float: none; padding: 20px 0px; text-align: center; font-size: 15px; font-weight: bold; margin-top: 20%; }
 		.rooms-channel{ position: relative; width: 10px; height: 10px; border-radius: 5px; margin-right: -10px; }
 			.rooms-channel:hover{ width: 8px; height: 8px; border: 1px solid #000; }
 			.channel-1{ background-color: #F99; }
@@ -270,34 +303,38 @@ iframe{
 			.rooms-gaming .rooms-number{ border-color: #CC9999; }
 		.rooms-item:hover{ background-color: #F4F4F4; }
 			.rooms-gaming:hover{ background-color: #FFCCCC; }
-			.rooms-create:hover{ background-color: #AADDFF; }
+			.rooms-create:hover{ background-color: #00000020; }
 		.rooms-number{ padding-top: 18px; border-right: 1px solid #CCCCCC; margin-right: 4px; width: 49px; height: 46px; font-size: 24px; }
-		.rooms-title{ padding-top: 4px; width: 270px; height: 20px; font-size: 16px; font-weight: bold; }
+		.rooms-title{ padding-top: 4px; width: 247px; height: 20px; font-size: 16px; font-weight: bold; }
 		.rooms-limit{ padding-top: 7px; width: 39px; height: 17px; text-align: center; }
-		.rooms-mode{ padding-top: 5px; width: 270px; }
+		.rooms-mode{ padding-top: 5px; width: 247px; }
 		.rooms-info{ width: 270px; }
 			.rooms-round{ padding-top: 5px; margin-right: 10px; }
 			.rooms-time{ padding-top: 5px; }
 		.rooms-lock{ padding-top: 8px; width: 39px; text-align: center; font-size: 24px; }
 .ShopBox{
-	width: 790px;
-	height: 360px;
+	width: 750px;
+	height: 470px;
+	margin: 5px 5px 5px 0px;
 }
 	.ShopBox div{ float: left; }
 	.ShopBox .product-body{ width: 780px; height: 330px; }
 .RoomBox{
-	width: 1000px;
-	height: 360px;
+	width: 750px;
+	height: 470px;
+	margin-right: 5px;
+	margin-top: 5px;
+	background-image: url('/img/kkutu/roombox.png');
 }
 	.RoomBox .product-title{ height: 12px; }
 	.RoomBox .product-title h5{ float: left; }
 		.room-head-modified{ animation: ModifiedBlink 1s ease 3; }
 		.room-head-number{ width: 35px; text-align: center; }
-		.room-head-title{ font-weight: bold; width: 505px; }
-		.room-head-mode{ margin-right: 5px; width: 255px; text-align: right; }
-		.room-head-limit{ width: 70px; text-align: center; }
-		.room-head-round{ width: 70px; text-align: center; }
-		.room-head-time{ width: 54px; text-align: center; }
+		.room-head-title{ font-weight: bold; width: 255px; }
+		.room-head-mode{ float: right !important; margin-right: 5px; width: 255px; text-align: right; }
+		.room-head-limit{ float: right !important; width: 70px; text-align: center; }
+		.room-head-round{ float: right !important; width: 70px; text-align: center; }
+		.room-head-time{ float: right !important; width: 54px; text-align: center; }
 	.team-selector{
 		float: left;
 		padding-right: 3px;
@@ -316,6 +353,7 @@ iframe{
 			text-align: center;
 			font-size: 13px;
 			cursor: pointer;
+			font-weight: bold;
 		}
 		.team-button:hover{ border-bottom: 4px solid rgba(0, 0, 0, 0.5); margin-top: -2px; }
 		.team-unable div{ background-color: #BBBBBB; cursor: not-allowed; }
@@ -330,14 +368,14 @@ iframe{
 		padding: 3px;
 		border-radius: 10px;
 		margin: 3px;
-		width: 224px;
-		height: 151px;
+		width: 221px;
+		height: 133px;
 		box-shadow: 0px 1px 1px #777777;
 		background-color: #E4E4E4;
 	}
 		.room-user div{ float: left; }
 		.room-user-image{ margin: 3px; width: 100px; height: 100px; }
-		.room-user-stat{ padding: 3px; width: 112px; height: 100px; font-size: 15px; }
+		.room-user-stat{ padding: 3px; width: 109px; height: 100px; font-size: 15px; }
 			.room-user-stat div{ margin-bottom: 4px; }
 			.room-user-ready{ width: 100%; text-align: right; font-weight: bold; }
 				.room-user-readied{ color: #3A8BDF; }
@@ -345,13 +383,15 @@ iframe{
 				.room-user-practice{ color: #E1BA2D; }
 				.room-user-master{ color: #E14E2D; }
 			.room-user-team{ margin-left: 60%; width: 40%; text-align: center; }
-		.room-user-title{ padding: 6px 4px; width: 216px; font-size: 15px; }
-		.room-user-level{ width: 30px; height: 30px; }
-		.room-user-name{ padding: 9px 0px 0px 4px; font-weight: bold; }
+		.room-user-title{ padding: 2px 6px 6px 6px; width: 216px; font-size: 15px; margin-top: -5px; }
+		.room-user-level{ width: 25px; height: 25px; }
+		.room-user-name{ padding: 5px 0px 0px 4px; font-weight: bold; }
 		.room-user:hover{ cursor: pointer; background-color: #EEEEEE; }
 .GameBox{
 	width: 1000px;
-	height: 410px;
+	height: 470px;
+	margin-top: 5px;
+	margin-right: 5px;
 	background-image: url('/img/kkutu/gamebg.png');
 }
 	.GameBox .product-title{ height: 12px; }
@@ -713,25 +753,25 @@ iframe{
 		.kick-vote-time .graph-bar{ background-color: #FF6D6D; }
 	.purchase-not-enough{ color: #EE2222; }
 .MeBox{
-	width: 200px;
-	height: 190px;
+	width: 230px;
+	height: 120px;
 	cursor: pointer;
+	margin: 5px 0px 5px 5px;
 }
 	.MeBox div{ float: left; }
 	.bar-text{ color: #EEEEEE; text-align: center; text-shadow: 0px 1px 1px #141414; }
 	.my-image{ width: 80px; height: 80px; }
 	.my-stat{ padding-left: 5px; width: 105px; }
-		.my-stat-level{ margin: 1px; width: 18px; height: 18px; }
-		.my-stat-name{ padding-top: 3px; padding-left: 4px; width: 76px; height: 17px; font-weight: bold; }
-		.my-stat-record{ margin-top: 3px; width: 100%; }
-		.my-stat-ping{ margin-top: 3px; width: 100%; }
-		.my-okg{ border-radius: 5px; margin-top: 3px; width: 100%; height: 20px; overflow: hidden; background-color: #995511; }
+		.my-stat-name{ padding-left: 4px; width: 130px; height: 20px; font-weight: bold; font-size: 15px; margin-top: 5px; }
+		.my-stat-levelinfo{}
+			.my-stat-level{ width: 20px; height: 20px; }
+			.my-gauge{ border-radius: 10px; margin: 3px 0px; width: 110px; height: 20px; overflow: hidden; background-color: #333333; margin-left: 25px; margin-top: -20px; }
+				.my-gauge .graph-bar{ background-image: url('/img/kkutu/scorebar.png'); }
+		.my-gauge-text{ margin-top: -20px; margin-left: 30px; width: 100px; }
+		.my-stat-ping{ margin-top: 3px; width: 135px; }
+		.my-okg{ border-radius: 10px; width: 135px; height: 15px; overflow: hidden; background-color: #995511; }
 			.my-okg .graph-bar{ background-color: #FFBB44; }
-		.my-okg-text{ margin-top: -15px; width: 100px; }
-	.my-level{ margin: 13px 0px; width: 190px; font-size: 15px; text-align: center; }
-	.my-gauge{ border-radius: 10px; margin: 3px 0px; width: 190px; height: 30px; overflow: hidden; background-color: #333333; }
-		.my-gauge .graph-bar{ background-image: url('/img/kkutu/scorebar.png'); }
-	.my-gauge-text{ margin-top: -25px; width: 190px; }
+		.my-okg-text{ margin-top: -14px; width: 135px; }
 	.category-filter{
 		border-radius: 5px;
 		text-align: center;
@@ -788,6 +828,7 @@ iframe{
 	.cf-composable{ background-color: #FFAD31; }
 .ChatBox{
 	width: 1000px;
+	margin: 5px 0px 5px 5px;
 }
 	.chat-balloon{
 		position: absolute;
@@ -818,15 +859,15 @@ iframe{
 	}
 #Chat{
 	width: 100%;
+	height: 100%;
 	overflow-y: scroll;
 }
 #Talk{
 	float: left;
-	border-right: none;
 	border-top-right-radius: 0px;
 	border-bottom-right-radius: 0px;
 	margin-top: 5px;
-	width: calc(100% - 82px);
+	width: calc(100% - 52px);
 	height: 20px;
 }
 #ChatBtn{
@@ -835,7 +876,7 @@ iframe{
 	border-top-left-radius: 0px;
 	border-bottom-left-radius: 0px;
 	margin-top: 5px;
-	width: 60px;
+	width: 29px;
 	height: 20px;
 }
 	#Chat hr, #chat-log-board hr{
@@ -856,10 +897,10 @@ iframe{
 	}
 		.chat-notice .chat-head{ color: #1767CA; }
 		.chat-stamp{
-			float: left;
+			float: right;
 			padding-top: 2px;
-			width: 70px;
-			font-size: 11px;
+			width: 62px;
+			font-size: 10px;
 			text-align: right;
 			color: #999999;
 		}
@@ -867,17 +908,18 @@ iframe{
 			float: left;
 			padding-right: 4px;
 			margin-right: 5px;
-			width: 100px;
+			width: 144px;
 			font-weight: bold;
-			text-align: center;
+			font-size: 12px;
 			cursor: pointer;
 		}
 			.chat-head:hover{ background-color: #FFF; }
-		.chat-body{ float: left; width: calc(100% - 190px); min-height: 14px; }
+		.chat-body{ float: left; width: 100%; min-height: 14px; }
 .ADBox{
 	width: 1000px;
 	box-shadow: 0px 1px 1px #141414;
 	background-color: #232323;
+	display: none;
 }
 .ADBox .product-title{
 	border-bottom-color: #333333;

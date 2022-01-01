@@ -21,6 +21,9 @@ $(document).ready(function(){
 	
 	$data.PUBLIC = $("#PUBLIC").html() == "true";
 	$data.URL = $("#URL").html();
+	$data.NICKNAME_LIMIT = JSON.parse($("#NICKNAME_LIMIT").text());
+	$data.NICKNAME_LIMIT.REGEX.unshift(null);
+	$data.NICKNAME_LIMIT.REGEX = new (Function.prototype.bind.apply(RegExp, $data.NICKNAME_LIMIT.REGEX));
 	$data.version = $("#version").html();
 	$data.server = location.href.match(/\?.*server=(\d+)/)[1];
 	$data.shop = {};
@@ -69,7 +72,8 @@ $(document).ready(function(){
 			exit: $("#ExitBtn"),
 			notice: $("#NoticeBtn"),
 			replay: $("#ReplayBtn"),
-			leaderboard: $("#LeaderboardBtn")
+			leaderboard: $("#LeaderboardBtn"),
+			uslistb: $("#UserListBtn")
 		},
 		dialog: {
 			setting: $("#SettingDiag"),
@@ -129,7 +133,15 @@ $(document).ready(function(){
 			chatLog: $("#ChatLogDiag"),
 			obtain: $("#ObtainDiag"),
 				obtainOK: $("#obtain-ok"),
-			help: $("#HelpDiag")
+			help: $("#HelpDiag"),
+			uslist: $("#UserListDiag"),
+				uslBoard: $("userlist-board"),
+				uslTitle: $("UserListDiag .dialog-title"),
+			alert: $("#AlertDiag"),
+				alertTitle: $($($("#AlertDiag").children()[0]).children()[0]),
+				alertText: $('#AlertText'),
+				alertOK: $("#alert-ok"),
+				alertNo: $("#alert-no")
 		},
 		box: {
 			chat: $(".ChatBox"),
@@ -263,7 +275,10 @@ $(document).ready(function(){
 	});
 	$data.opts = $.cookie('kks');
 	if($data.opts){
-		applyOptions(JSON.parse($data.opts));
+		var opts = JSON.parse($data.opts);
+		opts.bv = $("#bgm-volume").val();
+		opts.ev = $("#effect-volume").val();
+		applyOptions(opts);
 	}
 	$(".dialog-head .dialog-title").on('mousedown', function(e){
 		var $pd = $(e.currentTarget).parents(".dialog");
@@ -557,6 +572,10 @@ $(document).ready(function(){
 		showDialog($stage.dialog.invite);
 		updateUserList(true);
 	});
+	$stage.menu.uslistb.on('click', function(e){
+		showDialog($stage.dialog.uslist);
+		updateUserList(true);
+	});
 	$stage.menu.practice.on('click', function(e){
 		if(RULE[MODE[$data.room.mode]].ai){
 			$("#PracticeDiag .dialog-title").html(L['practice']);
@@ -574,10 +593,12 @@ $(document).ready(function(){
 	});
 	$stage.menu.exit.on('click', function(e){
 		if($data.room.gaming){
-			if(!confirm(L['sureExit'])) return;
-			clearGame();
-		}
-		send('leave');
+			inAlert(true, 130, L['sureExit'], L['ok'], L['no'], function(res) {
+				if(res === 'no') return
+				clearGame();
+				send('leave');
+			});
+		} else send('leave');
 	});
 	$stage.menu.replay.on('click', function(e){
 		if($data._replay){
@@ -621,8 +642,8 @@ $(document).ready(function(){
 	});
 	$stage.dialog.settingOK.on('click', function(e){
 		applyOptions({
-			mb: $("#mute-bgm").is(":checked"),
-			me: $("#mute-effect").is(":checked"),
+			bv: $("#bgm-volume").val(),
+			ev: $("#effect-volume").val(),
 			di: $("#deny-invite").is(":checked"),
 			dw: $("#deny-whisper").is(":checked"),
 			df: $("#deny-friend").is(":checked"),
@@ -757,8 +778,9 @@ $(document).ready(function(){
 		tryJoin($data._roominfo);
 	});
 	$stage.dialog.profileHandover.on('click', function(e){
-		if(!confirm(L['sureHandover'])) return;
-		send('handover', { target: $data._profiled });
+		inAlert(true, 130, L['sureHandover'], L['ok'], L['no'], function(res) {
+			if (res === 'yes') send('handover', { target: $data._profiled });
+		});
 	});
 	$stage.dialog.profileKick.on('click', function(e){
 		send('kick', { robot: $data.robots.hasOwnProperty($data._profiled), target: $data._profiled });
@@ -786,13 +808,29 @@ $(document).ready(function(){
 		});
 	});
 	$stage.dialog.dressOK.on('click', function(e){
+		var data = {};
+		
 		$(e.currentTarget).attr('disabled', true);
-		$.post("/exordial", { data: $("#dress-exordial").val() }, function(res){
-			$stage.dialog.dressOK.attr('disabled', false);
-			if(res.error) return fail(res.error);
-			
-			$stage.dialog.dress.hide();
-		});
+		
+		if($("#dress-nickname").val() !== $data.nickname) data.nickname = $("#dress-nickname").val();
+		if($("#dress-exordial").val() !== $data.exordial) data.exordial = $("#dress-exordial").val();
+		
+		if(data.nickname || !Object.is(data.exordial, undefined)){
+			if(data.nickname && $data.NICKNAME_LIMIT.REGEX.test(data.nickname)) data.nickname = confirm("닉네임 정책에 어긋나는 문자(열)이 포함되어 있습니다.\n닉네임 정책에 어긋나는 부분을 제거하고 변경할까요?") ? data.nickname.replace($data.NICKNAME_LIMIT.REGEX, "") : undefined;
+			if(data.nickname ? confirm($data.NICKNAME_LIMIT.TERM > 0 ? L.sureChangeNickLimit1 + $data.NICKNAME_LIMIT.TERM + L.sureChangeNickLimit2 : L.sureChangeNickNoLimit) : !Object.is(data.exordial, undefined)) $.post("/profile", data, function(res){
+				if(res.error) return fail(res.error);
+				if(data.nickname){
+					$data.users[$data.id].nickname = $data.nickname = data.nickname;
+					$("#account-info").text(data.nickname);
+				}
+				if(!Object.is(data.exordial, undefined)) $data.users[$data.id].exordial = $data.exordial = data.exordial;
+				
+				send("bulkRefresh");
+				alert(data.nickname ? (!Object.is(data.exordial, undefined) ? L.nickChanged + $data.nickname + L.changed + " " + L.exorChanged + $data.exordial + L.changed : L.nickChanged + $data.nickname + L.changed) : L.exorChanged + $data.exordial + L.changed);
+			});
+		}
+		$stage.dialog.dressOK.attr("disabled", false);
+		$stage.dialog.dress.hide();
 	});
 	$("#DressDiag .dress-type").on('click', function(e){
 		var $target = $(e.currentTarget);
@@ -809,21 +847,22 @@ $(document).ready(function(){
 	});
 	$stage.dialog.cfCompose.on('click', function(e){
 		if(!$stage.dialog.cfCompose.hasClass("cf-composable")) return fail(436);
-		if(!confirm(L['cfSureCompose'])) return;
-		
-		$.post("/cf", { tray: $data._tray.join('|') }, function(res){
-			var i;
-			
-			if(res.error) return fail(res.error);
-			send('refresh');
-			alert(L['cfComposed']);
-			$data.users[$data.id].money = res.money;
-			$data.box = res.box;
-			for(i in res.gain) queueObtain(res.gain[i]);
-			
-			drawMyDress($data._avGroup);
-			updateMe();
-			drawCharFactory();
+		inAlert(true, 130, L['cfSureCompose'], L['ok'], L['no'], function(res) {
+			if (res === 'no') return
+			$.post("/cf", { tray: $data._tray.join('|') }, function(res){
+				var i;
+
+				if(res.error) return fail(res.error);
+				send('refresh');
+				inAlert(false, 130, L['cfComposed'], L['ok']);
+				$data.users[$data.id].money = res.money;
+				$data.box = res.box;
+				for(i in res.gain) queueObtain(res.gain[i]);
+
+				drawMyDress($data._avGroup);
+				updateMe();
+				drawCharFactory();
+			});
 		});
 	});
 	$("#room-injeong-pick").on('click', function(e){
@@ -878,7 +917,7 @@ $(document).ready(function(){
 			var my = $data.users[$data.id];
 			
 			if(res.error) return fail(res.error);
-			alert(L['purchased']);
+			inAlert(false, 130, L['purchased'], L['ok']);
 			my.money = res.money;
 			my.box = res.box;
 			updateMe();
@@ -928,7 +967,7 @@ $(document).ready(function(){
 					var $p;
 					
 					$players.append($p = $("<div>").addClass("replay-player-bar ellipse")
-						.html(u.title)
+						.text(u.title)
 						.prepend(getLevelImage(u.data.score).addClass("users-level"))
 					);
 					if(u.id == data.me) $p.css('font-weight', "bold");
@@ -937,7 +976,7 @@ $(document).ready(function(){
 				$stage.dialog.replayView.attr('disabled', false);
 			}catch(ex){
 				console.warn(ex);
-				return alert(L['replayError']);
+				return inAlert(false, 130, L['replayError'], L['ok']);
 			}
 		};
 	});
@@ -981,13 +1020,14 @@ $(document).ready(function(){
 			
 			if(rws) rws.close();
 			stopAllSounds();
-			alert(ct);
+			inAlert(false, 130, ct, L['ok']);
 			$.get("/kkutu_notice.html", function(res){
 				loading(res);
 			});
 		};
 		ws.onerror = function(e){
-			console.warn(L['error'], e);
+			console.warn(L[100], e);
+			isWelcome = false;
 		};
 	}
 });

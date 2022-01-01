@@ -17,9 +17,9 @@
  */
 
 #holder{
-	width: 200px;
+	width: 325px;
 	text-align: center;
-	text-shadow: 0px 0px 4px #333;
+	color: #333;
 	font-weight: bold;
 }
 #logo{
@@ -48,44 +48,63 @@
 	height: 70px;
 	font-size: 20px;
 	font-weight: bold;
+	border-radius: 10px;
 	border: none;
-	border-bottom-left-radius: inherit;
-	border-bottom-right-radius: inherit;
+	background: #FFFFFF;
+	box-shadow: 0px 0px 15px 5px #00000022;
+	margin-top: 15px;
 }
-	#game-start:hover{ font-size: 24px; background-color: rgba(0, 0, 0, 0.5); }
+	#game-start:hover{ font-size: 24px; background-color: #dddddd; }
 .server-list-box{
-	float: right;
+	float: left;
 	width: 320px;
-	background-color: rgba(0, 0, 0, 0.4);
+	background-color: #ffffff;
+	margin-left: 40px;
+	margin-top: 30px;
 }
 .server-list-title{
 	padding: 2px 0px;
 	width: 100%;
-	background-color: rgba(0, 0, 0, 0.4);
+	background-color: rgba(0, 0, 0, 0.1);
+	color: #222222;
+	font-weight: bold;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	box-shadow: 0px -5px 15px 5px #00000022;
 }
 #server-refresh{
 	margin: 0px 5px;
 	cursor: pointer;
 }
+#server-list{
+	box-shadow: 0px 5px 15px 5px #00000022;
+	width: 320px;
+	height: 150px;
+	background-color: #ffffff;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
 .server{
 	float: left;
 	margin: 2px 0px;
 	width: 320px;
-	height: 16px;
+	height: 33px;
 	font-size: 13px;
 	cursor: pointer;
+	color: #333333;
+	font-weight: bold;
 }
 	.server>div{ float: left; }
-	.server-status{ border-radius: 6px; margin: 2px; width: 12px; height: 12px; }
-		.ss-o{ background-color: #3E3; }
-		.ss-p{ background-color: #EE3; }
-		.ss-q{ background-color: #F55; }
-		.ss-x{ background-color: #777; }
-	.server-name{ width: 60px; }
+	.server-status{ border-radius: 6px; margin: 2px; width: 12px; height: 12px; margin-top: 8px; margin-left: 10px; }
+		.ss-o{ background-color: #3E3; box-shadow: 0px 0px 0px 2px #00000055; }
+		.ss-p{ background-color: #EE3; box-shadow: 0px 0px 0px 2px #00000055; }
+		.ss-q{ background-color: #F55; box-shadow: 0px 0px 0px 2px #00000055; }
+		.ss-x{ background-color: #777; box-shadow: 0px 0px 0px 2px #00000055; }
+	.server-name{ width: 50px; margin-top: 8px; margin-right: 5px; text-align: center; }
 	.server-people{ width: 190px; height: 100%; }
 		.server-people>.graph-bar{ background-image: url(/img/blue_gauge.png); }
-		.server-people>label{ position: relative; display: block; top: -14px; width: 100%; text-align: center; font-size: 11px; }
-	.server-enter{ width: 50px; text-align: center; }
+		.server-people>label{ position: relative; display: block; top: -24px; width: 100%; text-align: center; font-size: 11px; }
+	.server-enter{ margin-top: 8px; width: 50px; text-align: center; }
 	.server:hover{ background-color: rgba(255, 255, 255, 0.1); }
 
 #Background{

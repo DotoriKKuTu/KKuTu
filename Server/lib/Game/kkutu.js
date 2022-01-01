@@ -21,6 +21,8 @@ var Cluster = require("cluster");
 var Const = require('../const');
 var Lizard = require('../sub/lizard');
 var JLog = require('../sub/jjlog');
+var GLOBAL = require("../sub/global.json");
+var admin = GLOBAL.ADMIN
 // 망할 셧다운제 var Ajae = require("../sub/ajae");
 var DB;
 var SHOP;
@@ -241,6 +243,7 @@ exports.Client = function(socket, profile, sid){
 			image: GUEST_IMAGE
 		};
 	}
+	my.nickname = null;
 	my.socket = socket;
 	my.place = 0;
 	my.team = 0;
@@ -287,7 +290,7 @@ exports.Client = function(socket, profile, sid){
 		if(!my) return;
 		if(!msg) return;
 		
-		JLog.log(`Chan @${channel} Msg #${my.id}: ${msg}`);
+		if(JSON.parse(msg).type != 'reloadData') JLog.log(`Chan @${channel} Msg #${my.id}: ${msg}`);
 		try{ data = JSON.parse(msg); }catch(e){ data = { error: 400 }; }
 		if(Cluster.isWorker) process.send({ type: "tail-report", id: my.id, chan: channel, place: my.place, msg: data.error ? msg : data });
 		
@@ -325,6 +328,7 @@ exports.Client = function(socket, profile, sid){
 			o.data = my.data;
 			o.money = my.money;
 			o.equip = my.equip;
+			o.nickname = my.nickname;
 			o.exordial = my.exordial;
 		}
 		return o;
@@ -420,7 +424,7 @@ exports.Client = function(socket, profile, sid){
 			const blockedUntil = (first || !$user.blockedUntil) ? null : $user.blockedUntil;
 			/* Enhanced User Block System [E] */
 
-			if(first) $user = { money: 0 };
+			if(first) $user = { nickname: my.profile.title || my.profile.name, money: 0 };
 			if(black == "null") black = false;
 			if(black == "chat"){
 				black = false;
@@ -441,14 +445,21 @@ exports.Client = function(socket, profile, sid){
 					}
 				}
 			}*/
+			my.nickname = $user.nickname;
 			my.exordial = $user.exordial || "";
+			if (my.nickname) my.profile.title = my.nickname;
 			my.equip = $user.equip || {};
 			my.box = $user.box || {};
 			my.data = new exports.Data($user.kkutu);
 			my.money = Number($user.money);
 			my.friends = $user.friends || {};
-			if(first) my.flush();
-			else{
+			if(first){
+				my.flush();
+				DB.users.update([ '_id', my.id ]).set([ 'nickname', my.nickname || "별명 미지정" ]).on(function($body){
+					if(!my.nickname) JLog.warn(`OAuth로부터 별명을 받아오지 못한 유저가 있습니다. #${my.id}`);
+					DB.session.update([ '_id', sid ]).set([ 'nickname', my.nickname || "별명 미지정" ]).on();
+				});
+			}else{
 				my.checkExpire();
 				my.okgCount = Math.floor((my.data.playTime || 0) / PER_OKG);
 			}
@@ -539,7 +550,7 @@ exports.Client = function(socket, profile, sid){
 					if($room.kicked.indexOf(my.id) != -1){
 						return my.sendError(406);
 					}
-					if($room.password != room.password && $room.password){
+					if($room.password != room.password && $room.password && admin.indexOf(my.id) == -1){
 						$room = undefined;
 						return my.sendError(403);
 					}
@@ -1205,7 +1216,7 @@ exports.Room = function(room, channel){
 				res[i].rank = Number(i);
 			}
 			pv = res[i].score;
-			rw = getRewards(my.mode, o.game.score / res[i].dim, o.game.bonus, res[i].rank, rl, sumScore);
+			rw = getRewards(my.mode, o.game.score / res[i].dim, o.game.bonus, res[i].rank, rl, sumScore, my.opts);
 			rw.playTime = now - o.playAt;
 			o.applyEquipOptions(rw); // 착용 아이템 보너스 적용
 			if(rw.together){
@@ -1302,7 +1313,11 @@ exports.Room = function(room, channel){
 		if(!my.gaming) return;
 		if(!my.game.seq) return;
 		
-		my.game.turn = (my.game.turn + 1) % my.game.seq.length;
+		if(my.opts && my.opts.randomturn){
+			my.game.turn = Math.floor(Math.random()*my.game.seq.length)
+		} else {
+			my.game.turn = (my.game.turn + 1) % my.game.seq.length;
+		};
 		my.turnStart(force);
 	};
 	my.turnEnd = function(){
@@ -1391,9 +1406,13 @@ function shuffle(arr){
 	
 	return r;
 }
-function getRewards(mode, score, bonus, rank, all, ss){
+function getRewards(mode, score, bonus, rank, all, ss, opts){
 	var rw = { score: 0, money: 0 };
 	var sr = score / ss;
+
+	if (opts.unknownword) return { score: 0, money: 0 } // 언노운워드는 보상이 없다.
+	if (opts.returns) rw.score = rw.score * 0.3 // 리턴
+	if (opts.randomturn) rw.score = rw.score * 1.3; // 랜덤 턴
 	
 	// all은 1~8
 	// rank는 0~7

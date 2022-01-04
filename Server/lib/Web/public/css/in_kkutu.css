@@ -307,10 +307,10 @@ iframe{
 		.rooms-number{ padding-top: 18px; border-right: 1px solid #CCCCCC; margin-right: 4px; width: 49px; height: 46px; font-size: 24px; }
 		.rooms-title{ padding-top: 4px; width: 247px; height: 20px; font-size: 16px; font-weight: bold; }
 		.rooms-limit{ padding-top: 7px; width: 39px; height: 17px; text-align: center; }
-		.rooms-mode{ padding-top: 5px; width: 247px; }
+		.rooms-mode{ width: 247px; height: 28px; }
 		.rooms-info{ width: 270px; }
-			.rooms-round{ padding-top: 5px; margin-right: 10px; }
-			.rooms-time{ padding-top: 5px; }
+			.rooms-round{ margin-right: 10px; }
+			.rooms-time{}
 		.rooms-lock{ padding-top: 8px; width: 39px; text-align: center; font-size: 24px; }
 .ShopBox{
 	width: 750px;

@@ -17,7 +17,7 @@
 extends layout
 
 block Subject
-	title 웹으로 즐기는 끝말잇기 온라인 게임! 도토리끄투
+	title= "웹으로 즐기는 끝말잇기 온라인 게임! 도토리끄투"
 
 block CSS
 	link(rel='stylesheet', href='/css/in_kkutu.css')
@@ -26,11 +26,12 @@ block Middle
 	div#loginbox
 		span#locale= JSON.stringify(LANG)
 		//볕뉘 수정 구문삭제(30)
-		div.login-with= L('loginWith')
+		div.login-with= locals.text ? L(locals.text) : L('loginWith')
 		//볕뉘 수정
 		each val in loginList
 			a(href="/login/" + val.vendor)
-				button(style="color: " + val.fontColor + "; background-color: " + val.color + ";")= L(val.displayName)
+				button(style="color: " + val.fontColor + "; background-color: " + val.color + ";")
+					div#login-icon(style="background-image: url(/img/login/icon/" + val.vendor + ".png);")
 		//볕뉘 수정 끝
-	div.login-legal!= L('loginLegal')
-	div(style='float: left; width: 1208px; height: 700px; background-image: url("/img/login/retori.png"); background-size: 100%; position: absolute; bottom: 70px; z-index: -1')
+	div(style='height: 32px; margin: 0px auto;')
+		div.login-legal!= L('loginLegal')

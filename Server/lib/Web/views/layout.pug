@@ -59,13 +59,20 @@ html
 		div#Jungle
 			span#mobile= locals.mobile
 			span#summonerID= DATA._id
-			img#Background
+			div#Background
 			block Jungle
 		div#Middle
 			block Middle
 		div#Footer
-			div.footer-title <div style='font-size: 19px'>도토리끄투</div><div style='font-size: 12px;'>(C)2022, 도토리</div>
-			div.footer-legal 이 프로그램은 어떠한 형태의 보증도 제공되지 않는 자유 소프트웨어이며<br>배포 규정을 만족시키는 조건 아래 자유롭게 재배포할 수 있습니다.<br><a target='_blank' href='https://github.com/DotoriKKuTu/KKuTu' style='font-weight: bold;'>https://github.com/DotoriKKuTu/KKuTu</a>
-			div.footer-legal <label style='color: #777777;'>WordNet 3.0 Copyright 2006 by Princeton University.<br>All rights reserved.</label><br><a target='_blank' href='http://wordnet.princeton.edu' target='_blank' style='font-weight: bold;'>WordNet에서 사전 정보를 제공 받았습니다.</a>
+			div(style='width: 1090px; height: 90px; margin: 0px auto;')
+				div.footer-title <div style='font-size: 19px'>도토리끄투</div><div style='font-size: 12px;'>(C)2022, 도토리</div>
+				div.footer-legal 이 프로그램은 어떠한 형태의 보증도 제공되지 않는 자유 소프트웨어이며<br>배포 규정을 만족시키는 조건 아래 자유롭게 재배포할 수 있습니다.<br><a target='_blank' href='https://github.com/DotoriKKuTu/KKuTu' style='font-weight: bold;'>https://github.com/DotoriKKuTu/KKuTu</a>
+				div.footer-legal WordNet 3.0ⓒPrinceton University.<br>한국어 단어에 대한 저작권은 모두 국립국어원에 있습니다.<br><a target='_blank' href='https://wordnet.princeton.edu' target='_blank' style='font-weight: bold; margin-right: 5px;'>WordNet</a><a target='_blank' href='https://www.korean.go.kr' target='_blank' style='font-weight: bold;'>국립국어원</a>
+				div(style='float: left; width: 190px; margin-left: 132px;')
+					div.footer-hlink(style='float:right; margin-top: 30px;') <a target='_blank' href='https://discord.gg/38UdFdyQGH' style='font-weight: bold;'>공식 디스코드</a>
+					div.footer-hlink(style='float:right; margin-top: 30px;') <a target='_blank' href='/notice/thanks.html' style='font-weight: bold;'>고마운 분들</a>
+					br
+					div.footer-hlink <a target='_blank' href='/notice/operation.html' style='font-weight: bold;'>서비스 이용약관</a>
+					div.footer-hlink <a target='_blank' href='/notice/privacy.html' style='font-weight: bold;'>개인정보처리방침</a>
 			block Footer
 			+separator(10)

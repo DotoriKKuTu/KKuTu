@@ -17,17 +17,15 @@
 extends layout
 
 block Subject
-	title 웹으로 즐기는 끝말잇기 온라인 게임! 도토리끄투
+	title= "웹으로 즐기는 끝말잇기 온라인 게임! 도토리끄투"
 
 block CSS
 	link(rel='stylesheet', href='/css/in_kkutu.css')
 
 block Middle
 	+separator(5)
-	div(style='float: left; width: 800px; height: 230px; margin-top: -20px; margin-left: -185px; background: url("/img/portal/balloon1.png"); background-size: 100%;')
-		div(style='float: left; margin-top: 50px; margin-left: 20px;')
-			h3#holder 웹으로 즐기는 끝말잇기 온라인 게임!
-			button#game-start= L('gameStart')
+	div(style='float: left; width: 280px; margin-right: 10px; margin-top: -10px;')
+		button#game-start= L('gameStart')
 		div.server-list-box
 			h3.server-list-title
 				a#server-refresh
@@ -36,9 +34,8 @@ block Middle
 				label= L('serverList')
 				label#server-total(style='color: #444; font-size: 13px;')
 			div#server-list
-	div(style='float: left; width: 150px; height: 171px; margin-left: -47px; margin-top: -20px; background: url("/img/portal/ballon3.png"); background-size: 100%;')
-		div#profileIMG= "모레미를 불러오고 있어요!"
-	div(style='float: left; width: 800px; height: 442px; margin-top: 10px; margin-left: -185px; background: url("/img/portal/balloon2.png"); background-size: 100%;')
-		iframe#kkutu-bulletin(style='width: 90%; height: 420px; margin-left: 10px; margin-top: 10px;' src='/kkutu_bulletin.html')
-	div(style='float: left; width: 1208px; height: 700px; background-image: url("/img/portal/dotori.png"); background-size: 100%; position: absolute; bottom: 70px; z-index: -1')
+	div(style='float: left; margin-top: -10px; width: 720px; height: 250px; background-image: url(/img/portal/banner.png); background-color: #fff; border-radius: 10px;')
+	iframe(src='https://discord.com/widget?id=923836416700612640&theme=white' style='float: left; margin-top: 10px; margin-right: 10px; border-radius: 10px; width: 280px; height: 380px;' allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts")
+	div(style='float: left; margin-top: 10px; width: 720px; height:380px; background: #fff; border-radius: 10px;')
+		iframe#kkutu-bulletin(style='width: 98%; height: 370px; margin-left: 10px; margin-top: 10px;' src='/kkutu_bulletin.html')
 	+separator(10)

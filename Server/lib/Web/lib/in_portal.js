@@ -18,7 +18,7 @@
 
 (function(){
 	var $stage;
-	var LIMIT = 400;
+	var LIMIT = 120;
 	var LIST;
 
 	$(document).ready(function(){
@@ -31,7 +31,7 @@
 		};
 
 		$("#Background").attr('src', "").addClass("jt-image").css({
-			'background-image': "url(/img/kkutu/gamebg.png)",
+			'background-image': "url(/img/portal/portalbg.png)",
 			'background-size': "200px 200px"
 		});
 		$stage.start.prop('disabled', true).on('click', function(e){

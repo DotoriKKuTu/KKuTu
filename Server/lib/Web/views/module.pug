@@ -57,9 +57,9 @@
 	};
 
 mixin Menu()
-	div.Menu(style='display: flex; justify-content: space-around; align-items: center; height: 70px;')
-		img.topLogo(onclick='location.href = "/";', src='/img/kkutu/toplogo.png', style='height: 40px; margin-right: 350px; cursor: pointer;')
-		div#account
+	div.Menu(style='width: 1090px; height: 70px; margin: 0px auto;')
+		img.topLogo(onclick='location.href = "/";', src='/img/kkutu/toplogo.png', style='float: left; height: 40px; margin-top: 15px; cursor: pointer;')
+		div#account(style='float: right; margin-top: 18px;')
 			span#profile= SESSION.profile ? JSON.stringify(SESSION.profile) : '{}'
 			div#account-info
 

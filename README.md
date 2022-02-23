@@ -1,3 +1,7 @@
+# 읽어주세요
+- 도토리끄투에서 제작한 리소스의 무단 사용을 금지합니다.
+- 이 레포지토리를 무단으로 사용·참고하지 마세요.
+
 # KKuTu
 - Made by [JJoriping](http://blog.jjo.kr/)
 - Special thanks to

@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
-extends layout
+extends layout_portal
 
 block Subject
 	title= "웹으로 즐기는 끝말잇기 온라인 게임! 도토리끄투"
@@ -24,18 +24,44 @@ block CSS
 
 block Middle
 	+separator(5)
-	div(style='float: left; width: 280px; margin-right: 10px; margin-top: -10px;')
-		button#game-start= L('gameStart')
-		div.server-list-box
-			h3.server-list-title
-				a#server-refresh
-					+FA('refresh')
-					+Expl(L('serverRefresh'))
-				label= L('serverList')
-				label#server-total(style='color: #444; font-size: 13px;')
-			div#server-list
-	div(style='float: left; margin-top: -10px; width: 720px; height: 250px; background-image: url(/img/portal/banner.png); background-color: #fff; border-radius: 10px;')
-	iframe(src='https://discord.com/widget?id=923836416700612640&theme=white' style='float: left; margin-top: 10px; margin-right: 10px; border-radius: 10px; width: 280px; height: 380px;' allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts")
-	div(style='float: left; margin-top: 10px; width: 720px; height:380px; background: #fff; border-radius: 10px;')
-		iframe#kkutu-bulletin(style='width: 98%; height: 370px; margin-left: 10px; margin-top: 10px;' src='/kkutu_bulletin.html')
+	div#mainbg
+	div#djj
+		div#main-top
+			div#notice
+				include ../public/portal_notice.html
+			div#portalbgm
+				div#bgmlicense
+					a(href='https://www.youtube.com/watch?v=BNOdTsBTre8' target='_blank')= '끄투온라인 로비 배경음악(bgm) 편곡'
+				audio#bgm(src='/media/PortalBGM.mp3' controls loop)
+		div#banner
+			div#moon(onclick="window.open('about:blank').location.href='https://kkutu.kr';" style='cursor: pointer;')
+				//- div#daldalso
+			div#banner-title= ''
+		div#join
+			div(style='width: 280px; height: 285px; border-radius: 10px; box-shadow: 0px 0px 20px 0px #00000044;')
+				button#game-start= L('gameStart')
+				div.server-list-box
+					h3.server-list-title
+						a#server-refresh
+							+FA('refresh')
+							+Expl(L('serverRefresh'))
+						label= L('serverList')
+						label#server-total(style='color: #444; font-size: 13px;')
+					div#server-list
+	div#update
+		div.title-box
+			div.list-title(onclick="window.open('about:blank').location.href='https://daldal.so/w/참나무/도토리끄투'")= '업데이트'
+		div#update-list
+			div#ud1.update-item(onclick="window.open('about:blank').location.href='https://daldal.so/w/참나무/도토리끄투/2'")
+				div.update-title= 'v1.1.0 업데이트'
+			div#ud2.update-item
+			div#ud3.update-item
+			div#ud4.update-item
+			div#ud5.update-item
+	div#youtube
+		div.title-box
+			div.list-title= '유튜브'
+		div#youtube-list
+			iframe.youtube-item(src='https://www.youtube.com/embed/e0iD7WXYFBU' style='margin-right: 10px;')
+			iframe.youtube-item(src='https://www.youtube.com/embed/e0iD7WXYFBU')
 	+separator(10)
